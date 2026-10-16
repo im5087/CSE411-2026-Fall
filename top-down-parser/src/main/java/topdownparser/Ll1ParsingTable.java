@@ -39,7 +39,6 @@ public final class Ll1ParsingTable {
     if (grammar == null) {
       throw new IllegalArgumentException("grammar must not be null");
     }
-
     final Map<String, Set<String>> first = initialSets(grammar);
     boolean changed;
     do {
@@ -55,13 +54,13 @@ public final class Ll1ParsingTable {
     do {
       changed = false;
       for (final Production production : grammar.getProductions()) {
-        final List<String> rhs = production.getRightHandSide();
-        for (int i = 0; i < rhs.size(); i++) {
-          final String symbol = rhs.get(i);
+        final List<String> right = production.getRightHandSide();
+        for (int i = 0; i < right.size(); i++) {
+          final String symbol = right.get(i);
           if (!grammar.getNonterminals().contains(symbol)) {
             continue;
           }
-          final Set<String> suffixFirst = firstOfSequence(rhs.subList(i + 1, rhs.size()),
+          final Set<String> suffixFirst = firstOfSequence(right.subList(i + 1, right.size()),
               grammar, first);
           changed |= addWithoutEpsilon(follow.get(symbol), suffixFirst);
           if (suffixFirst.contains(Grammar.EPSILON)) {
@@ -77,17 +76,16 @@ public final class Ll1ParsingTable {
       cells.put(nonterminal, new LinkedHashMap<String, List<Production>>());
     }
     for (final Production production : grammar.getProductions()) {
-      final String lhs = production.getLeftHandSide();
-      final Set<String> productionFirst = firstOfSequence(production.getRightHandSide(),
-          grammar, first);
+      final Set<String> productionFirst = firstOfSequence(production.getRightHandSide(), grammar,
+          first);
       for (final String terminal : productionFirst) {
         if (!Grammar.EPSILON.equals(terminal)) {
-          add(cells, lhs, terminal, production);
+          add(cells, production.getLeftHandSide(), terminal, production);
         }
       }
       if (productionFirst.contains(Grammar.EPSILON)) {
-        for (final String terminal : follow.get(lhs)) {
-          add(cells, lhs, terminal, production);
+        for (final String terminal : follow.get(production.getLeftHandSide())) {
+          add(cells, production.getLeftHandSide(), terminal, production);
         }
       }
     }
